@@ -37,7 +37,8 @@ var (
 	ClientPass string
 )
 
-func init() {
+// Init 初始化
+func Init() {
 	cargoboat = NewRedisCargoboatClient(AppKey, AppSecret, logrus.New(), &redis.Options{
 		Addr:     ClientAddr,
 		Password: ClientPass,
