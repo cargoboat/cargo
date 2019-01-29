@@ -1,8 +1,8 @@
 package client
 
 import (
+	"encoding/json"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -14,8 +14,8 @@ type Config map[string]interface{}
 
 // ConfigItem ...
 type ConfigItem struct {
-	Key   string
-	Value interface{}
+	Key   string      `json:"key"`
+	Value interface{} `json:"value"`
 }
 
 // RedisCargoboatClient redis 客户端
@@ -96,14 +96,11 @@ func String2ConfigItem(msg string) *ConfigItem {
 	if msg == "" {
 		return nil
 	}
-	confs := strings.Split(msg, ":")
-	if confs[0] == "" || len(confs) != 2 {
+	citem := &ConfigItem{}
+	if err := json.Unmarshal([]byte(msg), citem); err != nil {
 		return nil
 	}
-	return &ConfigItem{
-		Key:   confs[0],
-		Value: confs[1],
-	}
+	return citem
 }
 
 func (c *RedisCargoboatClient) subConfig(msg string) {
