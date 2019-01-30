@@ -3,7 +3,6 @@ package client
 import (
 	"time"
 
-	"github.com/go-redis/redis"
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,13 +14,10 @@ type Clienter interface {
 	GetFloat64(key string) float64
 	GetInt(key string) int
 	GetString(key string) string
-	GetStringMap(key string) map[string]interface{}
-	GetStringMapString(key string) map[string]string
-	GetStringSlice(key string) []string
 	GetTime(key string) time.Time
 	GetDuration(key string) time.Duration
 	IsExist(key string) bool
-	AllSettings() map[string]interface{}
+	Close() error
 }
 
 var cargoboat Clienter
@@ -31,19 +27,13 @@ var (
 	AppKey string
 	// AppSecret ...
 	AppSecret string
-	// ClientAddr ...
-	ClientAddr string
-	// ClientPass ...
-	ClientPass string
+	// ServerAddr ...
+	ServerAddr string
 )
 
 // Init 初始化
 func Init() {
-	cargoboat = NewRedisCargoboatClient(AppKey, AppSecret, logrus.New(), &redis.Options{
-		Addr:     ClientAddr,
-		Password: ClientPass,
-		DB:       0,
-	})
+	cargoboat = NewCargoboatClient(logrus.New(), ServerAddr, AppKey, AppSecret, "")
 }
 
 // WatchConfig 监听配置
@@ -76,21 +66,6 @@ func GetString(key string) string {
 	return cargoboat.GetString(key)
 }
 
-// GetStringMap return value as a map[string]interface{}.
-func GetStringMap(key string) map[string]interface{} {
-	return cargoboat.GetStringMap(key)
-}
-
-// GetStringMapString return value as a map[string]string.
-func GetStringMapString(key string) map[string]string {
-	return cargoboat.GetStringMapString(key)
-}
-
-// GetStringSlice return value as a []string.
-func GetStringSlice(key string) []string {
-	return cargoboat.GetStringSlice(key)
-}
-
 // GetTime return value as a time.Time.
 func GetTime(key string) time.Time {
 	return cargoboat.GetTime(key)
@@ -104,9 +79,4 @@ func GetDuration(key string) time.Duration {
 // IsExist return key is exist.
 func IsExist(key string) bool {
 	return cargoboat.IsExist(key)
-}
-
-// AllSettings return value as a map[string]interface{}.
-func AllSettings() map[string]interface{} {
-	return cargoboat.AllSettings()
 }
