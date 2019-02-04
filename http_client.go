@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/nilorg/sdk/log"
+
 	"github.com/robfig/cron"
 )
 
@@ -17,7 +19,7 @@ const cargoboatConfigVersionKey = "cargoboat.config.version"
 type CargoboatClient struct {
 	httpClient         *http.Client
 	cron               *cron.Cron
-	log                Logger
+	log                log.Logger
 	lock               sync.RWMutex
 	config             map[string]interface{}
 	baseURL            *url.URL
@@ -27,7 +29,7 @@ type CargoboatClient struct {
 }
 
 // NewCargoboatClient 创建 redis客户端
-func NewCargoboatClient(log Logger, baseURL, username, password, cronSpec string) Clienter {
+func NewCargoboatClient(log log.Logger, baseURL, username, password, cronSpec string) Clienter {
 	client := &CargoboatClient{
 		httpClient: &http.Client{},
 		cron:       cron.New(),
@@ -49,6 +51,7 @@ func NewCargoboatClient(log Logger, baseURL, username, password, cronSpec string
 	return client
 }
 
+// urlJoin url 拼接
 func (c *CargoboatClient) urlJoin(uri string) string {
 	u := *c.baseURL
 	u.Path = path.Join(u.Path, uri)
@@ -87,9 +90,9 @@ func (c *CargoboatClient) init() {
 		return
 	}
 	defer resp.Body.Close()
-	decode := json.NewDecoder(resp.Body)
+	jsonDecode := json.NewDecoder(resp.Body)
 	configResult := configResult{}
-	err = decode.Decode(&configResult)
+	err = jsonDecode.Decode(&configResult)
 	if err != nil {
 		c.log.Errorln(err)
 		return
@@ -102,12 +105,14 @@ func (c *CargoboatClient) init() {
 	}
 }
 
-// do 发送
+// do 执行HTTP请求
 func (c *CargoboatClient) do(req *http.Request) (response *http.Response, err error) {
 	req.SetBasicAuth(c.username, c.password)
 	response, err = c.httpClient.Do(req)
 	return
 }
+
+// set 批量设置配置项
 func (c *CargoboatClient) set(value ...configItem) {
 	defer c.lock.Unlock()
 	c.lock.Lock()
@@ -120,16 +125,19 @@ func (c *CargoboatClient) set(value ...configItem) {
 	}
 }
 
+// getConfig 获取配置
 func (c *CargoboatClient) getConfig(key string) interface{} {
 	defer c.lock.RUnlock()
 	c.lock.RLock()
 	return c.config[key]
 }
 
+// versionResult 版本结果
 type versionResult struct {
 	Version int64 `json:"version"`
 }
 
+// checkVersion 检查版本
 func (c *CargoboatClient) checkVersion() {
 	var req *http.Request
 	var err error
@@ -150,9 +158,9 @@ func (c *CargoboatClient) checkVersion() {
 		return
 	}
 	defer resp.Body.Close()
-	decode := json.NewDecoder(resp.Body)
+	jsonDecode := json.NewDecoder(resp.Body)
 	result := versionResult{}
-	err = decode.Decode(&result)
+	err = jsonDecode.Decode(&result)
 	if err != nil {
 		c.log.Errorln(err)
 		return
@@ -230,6 +238,7 @@ func (c *CargoboatClient) IsExist(key string) bool {
 	return ok
 }
 
+// Close 关闭
 func (c *CargoboatClient) Close() error {
 	c.cron.Stop()
 	return nil
