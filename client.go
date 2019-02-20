@@ -16,6 +16,7 @@ type Clienter interface {
 	GetString(key string) string
 	GetTime(key string) time.Time
 	GetDuration(key string) time.Duration
+	GetEnv(key string) interface{}
 	IsExist(key string) bool
 	Close() error
 }
@@ -74,6 +75,11 @@ func GetTime(key string) time.Time {
 // GetDuration return value as a time.Duration.
 func GetDuration(key string) time.Duration {
 	return cargoboat.GetDuration(key)
+}
+
+// GetEnv return value as a interface{}.
+func GetEnv(key string) interface{} {
+	return cargoboat.GetEnv(key)
 }
 
 // IsExist return key is exist.

@@ -2,9 +2,11 @@ package client
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 	"sync"
 	"time"
 
@@ -26,6 +28,7 @@ type CargoboatClient struct {
 	configVersion      int64
 	username, password string
 	cronSpec           string
+	watching           bool
 }
 
 // NewCargoboatClient 创建 redis客户端
@@ -121,7 +124,8 @@ func (c *CargoboatClient) set(value ...configItem) {
 		if v.Key == cargoboatConfigVersionKey {
 			continue
 		}
-		c.config[v.Key] = v.Value
+		key := strings.TrimPrefix(v.Key, fmt.Sprintf("%s.", c.username))
+		c.config[key] = v.Value
 	}
 }
 
@@ -174,11 +178,14 @@ func (c *CargoboatClient) checkVersion() {
 
 // WatchConfig 监听配置
 func (c *CargoboatClient) WatchConfig() {
-	err := c.cron.AddFunc(c.cronSpec, c.checkVersion)
-	if err != nil {
-		c.log.Errorf("WatchConfig AddFunc:%v", err)
+	if !c.watching {
+		err := c.cron.AddFunc(c.cronSpec, c.checkVersion)
+		if err != nil {
+			c.log.Errorf("WatchConfig AddFunc:%v", err)
+		}
+		c.cron.Start()
+		c.watching = true
 	}
-	c.cron.Start()
 }
 
 // Get return value as a interface{}.
@@ -230,6 +237,13 @@ func (c *CargoboatClient) GetDuration(key string) time.Duration {
 	return value.(time.Duration)
 }
 
+// GetEnv return value as a interface{}.
+func (c *CargoboatClient) GetEnv(key string) interface{} {
+	value := c.getConfig(fmt.Sprintf("env.%s", key))
+	c.log.Debugf("GetEnv %s Value:%v", key, value)
+	return value
+}
+
 // IsExist return key is exist.
 func (c *CargoboatClient) IsExist(key string) bool {
 	defer c.lock.RUnlock()
@@ -241,5 +255,6 @@ func (c *CargoboatClient) IsExist(key string) bool {
 // Close 关闭
 func (c *CargoboatClient) Close() error {
 	c.cron.Stop()
+	c.watching = false
 	return nil
 }
