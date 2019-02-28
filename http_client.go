@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/nilorg/sdk/convert"
+
 	"github.com/nilorg/sdk/log"
 
 	"github.com/robfig/cron"
@@ -206,35 +208,36 @@ func (c *CargoboatClient) GetBool(key string) bool {
 func (c *CargoboatClient) GetFloat64(key string) float64 {
 	value := c.getConfig(key)
 	c.log.Debugf("GetFloat64 %s Value:%v", key, value)
-	return value.(float64)
+	return convert.ToFloat64(value)
 }
 
 // GetInt return value as a int.
 func (c *CargoboatClient) GetInt(key string) int {
 	value := c.getConfig(key)
 	c.log.Debugf("GetInt %s Value:%v", key, value)
-	return value.(int)
+	return convert.ToInt(value)
 }
 
 // GetString return value as a string.
 func (c *CargoboatClient) GetString(key string) string {
 	value := c.getConfig(key)
 	c.log.Debugf("GetString %s Value:%v", key, value)
-	return value.(string)
+	return convert.ToString(value)
 }
 
 // GetTime return value as a time.Time.
-func (c *CargoboatClient) GetTime(key string) time.Time {
+func (c *CargoboatClient) GetTime(key, tileLayout string) (time.Time, error) {
 	value := c.getConfig(key)
 	c.log.Debugf("GetTime %s Value:%v", key, value)
-	return value.(time.Time)
+	t, err := time.Parse(tileLayout, convert.ToString(value))
+	return t, err
 }
 
 // GetDuration return value as a time.Duration.
 func (c *CargoboatClient) GetDuration(key string) time.Duration {
 	value := c.getConfig(key)
 	c.log.Debugf("GetDuration %s Value:%v", key, value)
-	return value.(time.Duration)
+	return time.Duration(convert.ToInt64(value))
 }
 
 // GetEnv return value as a interface{}.

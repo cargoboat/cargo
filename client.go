@@ -14,7 +14,7 @@ type Clienter interface {
 	GetFloat64(key string) float64
 	GetInt(key string) int
 	GetString(key string) string
-	GetTime(key string) time.Time
+	GetTime(key, timeLayout string) (time.Time, error)
 	GetDuration(key string) time.Duration
 	GetEnv(key string) interface{}
 	IsExist(key string) bool
@@ -68,8 +68,8 @@ func GetString(key string) string {
 }
 
 // GetTime return value as a time.Time.
-func GetTime(key string) time.Time {
-	return cargoboat.GetTime(key)
+func GetTime(key, timeLayout string) (time.Time, error) {
+	return cargoboat.GetTime(key, timeLayout)
 }
 
 // GetDuration return value as a time.Duration.
