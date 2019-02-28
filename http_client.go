@@ -2,11 +2,17 @@ package client
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/nilorg/sdk/convert"
+
+	"github.com/nilorg/sdk/log"
 
 	"github.com/robfig/cron"
 )
@@ -17,17 +23,18 @@ const cargoboatConfigVersionKey = "cargoboat.config.version"
 type CargoboatClient struct {
 	httpClient         *http.Client
 	cron               *cron.Cron
-	log                Logger
+	log                log.Logger
 	lock               sync.RWMutex
 	config             map[string]interface{}
 	baseURL            *url.URL
 	configVersion      int64
 	username, password string
 	cronSpec           string
+	watching           bool
 }
 
 // NewCargoboatClient 创建 redis客户端
-func NewCargoboatClient(log Logger, baseURL, username, password, cronSpec string) Clienter {
+func NewCargoboatClient(log log.Logger, baseURL, username, password, cronSpec string) Clienter {
 	client := &CargoboatClient{
 		httpClient: &http.Client{},
 		cron:       cron.New(),
@@ -49,6 +56,7 @@ func NewCargoboatClient(log Logger, baseURL, username, password, cronSpec string
 	return client
 }
 
+// urlJoin url 拼接
 func (c *CargoboatClient) urlJoin(uri string) string {
 	u := *c.baseURL
 	u.Path = path.Join(u.Path, uri)
@@ -87,9 +95,9 @@ func (c *CargoboatClient) init() {
 		return
 	}
 	defer resp.Body.Close()
-	decode := json.NewDecoder(resp.Body)
+	jsonDecode := json.NewDecoder(resp.Body)
 	configResult := configResult{}
-	err = decode.Decode(&configResult)
+	err = jsonDecode.Decode(&configResult)
 	if err != nil {
 		c.log.Errorln(err)
 		return
@@ -102,12 +110,14 @@ func (c *CargoboatClient) init() {
 	}
 }
 
-// do 发送
+// do 执行HTTP请求
 func (c *CargoboatClient) do(req *http.Request) (response *http.Response, err error) {
 	req.SetBasicAuth(c.username, c.password)
 	response, err = c.httpClient.Do(req)
 	return
 }
+
+// set 批量设置配置项
 func (c *CargoboatClient) set(value ...configItem) {
 	defer c.lock.Unlock()
 	c.lock.Lock()
@@ -116,20 +126,24 @@ func (c *CargoboatClient) set(value ...configItem) {
 		if v.Key == cargoboatConfigVersionKey {
 			continue
 		}
-		c.config[v.Key] = v.Value
+		key := strings.TrimPrefix(v.Key, fmt.Sprintf("%s.", c.username))
+		c.config[key] = v.Value
 	}
 }
 
+// getConfig 获取配置
 func (c *CargoboatClient) getConfig(key string) interface{} {
 	defer c.lock.RUnlock()
 	c.lock.RLock()
 	return c.config[key]
 }
 
+// versionResult 版本结果
 type versionResult struct {
 	Version int64 `json:"version"`
 }
 
+// checkVersion 检查版本
 func (c *CargoboatClient) checkVersion() {
 	var req *http.Request
 	var err error
@@ -150,9 +164,9 @@ func (c *CargoboatClient) checkVersion() {
 		return
 	}
 	defer resp.Body.Close()
-	decode := json.NewDecoder(resp.Body)
+	jsonDecode := json.NewDecoder(resp.Body)
 	result := versionResult{}
-	err = decode.Decode(&result)
+	err = jsonDecode.Decode(&result)
 	if err != nil {
 		c.log.Errorln(err)
 		return
@@ -166,11 +180,14 @@ func (c *CargoboatClient) checkVersion() {
 
 // WatchConfig 监听配置
 func (c *CargoboatClient) WatchConfig() {
-	err := c.cron.AddFunc(c.cronSpec, c.checkVersion)
-	if err != nil {
-		c.log.Errorf("WatchConfig AddFunc:%v", err)
+	if !c.watching {
+		err := c.cron.AddFunc(c.cronSpec, c.checkVersion)
+		if err != nil {
+			c.log.Errorf("WatchConfig AddFunc:%v", err)
+		}
+		c.cron.Start()
+		c.watching = true
 	}
-	c.cron.Start()
 }
 
 // Get return value as a interface{}.
@@ -191,35 +208,43 @@ func (c *CargoboatClient) GetBool(key string) bool {
 func (c *CargoboatClient) GetFloat64(key string) float64 {
 	value := c.getConfig(key)
 	c.log.Debugf("GetFloat64 %s Value:%v", key, value)
-	return value.(float64)
+	return convert.ToFloat64(value)
 }
 
 // GetInt return value as a int.
 func (c *CargoboatClient) GetInt(key string) int {
 	value := c.getConfig(key)
 	c.log.Debugf("GetInt %s Value:%v", key, value)
-	return value.(int)
+	return convert.ToInt(value)
 }
 
 // GetString return value as a string.
 func (c *CargoboatClient) GetString(key string) string {
 	value := c.getConfig(key)
 	c.log.Debugf("GetString %s Value:%v", key, value)
-	return value.(string)
+	return convert.ToString(value)
 }
 
 // GetTime return value as a time.Time.
-func (c *CargoboatClient) GetTime(key string) time.Time {
+func (c *CargoboatClient) GetTime(key, tileLayout string) (time.Time, error) {
 	value := c.getConfig(key)
 	c.log.Debugf("GetTime %s Value:%v", key, value)
-	return value.(time.Time)
+	t, err := time.Parse(tileLayout, convert.ToString(value))
+	return t, err
 }
 
 // GetDuration return value as a time.Duration.
 func (c *CargoboatClient) GetDuration(key string) time.Duration {
 	value := c.getConfig(key)
 	c.log.Debugf("GetDuration %s Value:%v", key, value)
-	return value.(time.Duration)
+	return time.Duration(convert.ToInt64(value))
+}
+
+// GetEnv return value as a interface{}.
+func (c *CargoboatClient) GetEnv(key string) interface{} {
+	value := c.getConfig(fmt.Sprintf("env.%s", key))
+	c.log.Debugf("GetEnv %s Value:%v", key, value)
+	return value
 }
 
 // IsExist return key is exist.
@@ -230,7 +255,9 @@ func (c *CargoboatClient) IsExist(key string) bool {
 	return ok
 }
 
+// Close 关闭
 func (c *CargoboatClient) Close() error {
 	c.cron.Stop()
+	c.watching = false
 	return nil
 }
