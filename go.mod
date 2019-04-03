@@ -1,7 +1,7 @@
 module github.com/cargoboat/cargo
 
 require (
-	github.com/nilorg/sdk v0.0.0-20190130084846-76476c6b8292
+	github.com/nilorg/sdk v0.0.0-20190403123128-aa8548d0921b
 	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967
 	github.com/sirupsen/logrus v1.3.0
 	github.com/stretchr/testify v1.3.0 // indirect
