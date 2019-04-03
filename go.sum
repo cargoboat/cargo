@@ -3,8 +3,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1 h1:mweAR1A6xJ3oS2pRaGiHgQ4OO8tzTaLawm8vnODuwDk=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
-github.com/nilorg/sdk v0.0.0-20190130084846-76476c6b8292 h1:XchxVZZS4ADpSiM8UBxiMlJqz171whk53qKoO64WYh0=
-github.com/nilorg/sdk v0.0.0-20190130084846-76476c6b8292/go.mod h1:3ucEfFqjxRb1q9t38i3arReUBkAOjASdgmRpOz4EBKA=
+github.com/nilorg/sdk v0.0.0-20190403123128-aa8548d0921b h1:SSeXyKLmKSzdv7u2QwfP3qwRkvt1HoYgdG49oHekeJ4=
+github.com/nilorg/sdk v0.0.0-20190403123128-aa8548d0921b/go.mod h1:X1swpPdqguAZaBDoEPyEWHSsJii0YQ1o+3piMv6W3JU=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967 h1:x7xEyJDP7Hv3LVgvWhzioQqbC/KtuUhTigKlH/8ehhE=

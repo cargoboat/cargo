@@ -201,7 +201,7 @@ func (c *CargoboatClient) Get(key string) interface{} {
 func (c *CargoboatClient) GetBool(key string) bool {
 	value := c.getConfig(key)
 	c.log.Debugf("GetBool %s Value:%v", key, value)
-	return value.(bool)
+	return convert.ToBool(value)
 }
 
 // GetFloat32 return value as a float32.
