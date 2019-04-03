@@ -204,6 +204,13 @@ func (c *CargoboatClient) GetBool(key string) bool {
 	return value.(bool)
 }
 
+// GetFloat32 return value as a float32.
+func (c *CargoboatClient) GetFloat32(key string) float32 {
+	value := c.getConfig(key)
+	c.log.Debugf("GetFloat32 %s Value:%v", key, value)
+	return convert.ToFloat32(value)
+}
+
 // GetFloat64 return value as a float64.
 func (c *CargoboatClient) GetFloat64(key string) float64 {
 	value := c.getConfig(key)
@@ -216,6 +223,41 @@ func (c *CargoboatClient) GetInt(key string) int {
 	value := c.getConfig(key)
 	c.log.Debugf("GetInt %s Value:%v", key, value)
 	return convert.ToInt(value)
+}
+
+// GetInt32 return value as a int32.
+func (c *CargoboatClient) GetInt32(key string) int32 {
+	value := c.getConfig(key)
+	c.log.Debugf("GetInt32 %s Value:%v", key, value)
+	return convert.ToInt32(value)
+}
+
+// GetInt64 return value as a int64.
+func (c *CargoboatClient) GetInt64(key string) int64 {
+	value := c.getConfig(key)
+	c.log.Debugf("GetInt64 %s Value:%v", key, value)
+	return convert.ToInt64(value)
+}
+
+// GetUint return value as a uint.
+func (c *CargoboatClient) GetUint(key string) uint {
+	value := c.getConfig(key)
+	c.log.Debugf("GetUint %s Value:%v", key, value)
+	return convert.ToUint(value)
+}
+
+// GetUint32 return value as a uint32.
+func (c *CargoboatClient) GetUint32(key string) uint32 {
+	value := c.getConfig(key)
+	c.log.Debugf("GetUint32 %s Value:%v", key, value)
+	return convert.ToUint32(value)
+}
+
+// GetUint64 return value as a uint64.
+func (c *CargoboatClient) GetUint64(key string) uint64 {
+	value := c.getConfig(key)
+	c.log.Debugf("GetUint64 %s Value:%v", key, value)
+	return convert.ToUint64(value)
 }
 
 // GetString return value as a string.
