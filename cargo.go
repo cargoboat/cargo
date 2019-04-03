@@ -1,27 +1,14 @@
-package client
+package cargo
 
 import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
+	"github.com/cargoboat/cargo/client"
 )
 
-// Clienter ...
-type Clienter interface {
-	WatchConfig()
-	Get(key string) interface{}
-	GetBool(key string) bool
-	GetFloat64(key string) float64
-	GetInt(key string) int
-	GetString(key string) string
-	GetTime(key, timeLayout string) (time.Time, error)
-	GetDuration(key string) time.Duration
-	GetEnv(key string) interface{}
-	IsExist(key string) bool
-	Close() error
-}
-
-var cargoboat Clienter
+var cargoboat client.Clienter
 
 var (
 	// AppKey ...
@@ -34,7 +21,7 @@ var (
 
 // Init 初始化
 func Init() {
-	cargoboat = NewCargoboatClient(logrus.New(), ServerAddr, AppKey, AppSecret, "")
+	cargoboat = client.NewCargoboatClient(logrus.New(), ServerAddr, AppKey, AppSecret, "")
 }
 
 // WatchConfig 监听配置

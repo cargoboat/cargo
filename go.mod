@@ -1,4 +1,4 @@
-module github.com/cargoboat/client
+module github.com/cargoboat/cargo
 
 require (
 	github.com/nilorg/sdk v0.0.0-20190130084846-76476c6b8292
