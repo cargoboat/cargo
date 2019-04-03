@@ -39,6 +39,11 @@ func GetBool(key string) bool {
 	return cargoboat.GetBool(key)
 }
 
+// GetFloat32 return value as a float32.
+func GetFloat32(key string) float32 {
+	return cargoboat.GetFloat32(key)
+}
+
 // GetFloat64 return value as a float64.
 func GetFloat64(key string) float64 {
 	return cargoboat.GetFloat64(key)
@@ -47,6 +52,31 @@ func GetFloat64(key string) float64 {
 // GetInt return value as a int.
 func GetInt(key string) int {
 	return cargoboat.GetInt(key)
+}
+
+// GetInt32 return value as a int32.
+func GetInt32(key string) int32 {
+	return cargoboat.GetInt32(key)
+}
+
+// GetInt64 return value as a int64.
+func GetInt64(key string) int64 {
+	return cargoboat.GetInt64(key)
+}
+
+// GetUint return value as a uint.
+func GetUint(key string) uint {
+	return cargoboat.GetUint(key)
+}
+
+// GetUint32 return value as a uint32.
+func GetUint32(key string) uint32 {
+	return cargoboat.GetUint32(key)
+}
+
+// GetUint64 return value as a uint64.
+func GetUint64(key string) uint64 {
+	return cargoboat.GetUint64(key)
 }
 
 // GetString return value as a string.
