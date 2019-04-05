@@ -1,6 +1,7 @@
 package cargo
 
 import (
+	"errors"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -21,6 +22,9 @@ var (
 
 // Init 初始化
 func Init() {
+	if AppKey == "" || AppSecret == "" || ServerAddr == "" {
+		panic(errors.New("Please enter required fields"))
+	}
 	cargoboat = client.NewCargoboatClient(logrus.New(), ServerAddr, AppKey, AppSecret, "")
 }
 
